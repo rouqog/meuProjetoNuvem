@@ -1,726 +1,766 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="h-full">
+<html lang="pt-BR" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EstacionaFácil - Sistema de Gerenciamento</title>
+    <title>ParkMaster - Sistema de Gerenciamento de Estacionamento</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-                    },
                     colors: {
-                        orange: {
-                            50: '#fff7ed',
-                            100: '#ffedd5',
-                            200: '#fed7aa',
-                            300: '#fdba74',
-                            400: '#fb923c',
-                            500: '#f97316',
-                            600: '#ea580c',
-                            700: '#c2410c',
-                            800: '#9a3412',
-                            900: '#7c2d12',
-                            950: '#431407',
+                        dark: {
+                            900: '#0b0f19',
+                            800: '#111827',
+                            700: '#1f2937',
+                            600: '#374151',
                         },
-                        amber: {
-                            500: '#f59e0b',
-                            600: '#d97706',
-                        },
-                        terracota: {
-                            DEFAULT: '#b45309',
-                            dark: '#92400e',
-                        },
-                        coral: {
-                            DEFAULT: '#e11d48',
-                            dark: '#be123c',
+                        brand: {
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
                         }
                     }
                 }
             }
         }
     </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        body {
+            font-family: 'Inter', sans-serif;
         }
-        .animate-fade-in {
-            animation: fadeIn 0.3s ease-out forwards;
-        }
-        /* Custom Scrollbar */
+        /* Custom scrollbar for tables */
         ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
         }
         ::-webkit-scrollbar-track {
-            background: #fff7ed;
+            background: #111827;
         }
         ::-webkit-scrollbar-thumb {
-            background: #fdba74;
-            border-radius: 4px;
+            background: #374151;
+            border-radius: 3px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #f97316;
+            background: #4b5563;
         }
     </style>
 </head>
-<body class="h-full bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100 text-orange-950 font-sans antialiased flex flex-col">
+<body class="bg-dark-900 text-gray-100 min-h-screen flex flex-col justify-between selection:bg-brand-500 selection:text-white">
 
-    <header class="bg-gradient-to-r from-orange-600 via-amber-600 to-terracota shadow-lg border-b border-orange-500/30 sticky top-0 z-30">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+    <header class="bg-dark-800 border-b border-dark-700 sticky top-0 z-30 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="bg-white/10 p-2.5 rounded-2xl backdrop-blur-md border border-white/20 text-white shadow-inner">
-                    <i class="fa-solid fa-square-parking text-2xl"></i>
+                <div class="bg-brand-600/20 text-brand-500 p-2.5 rounded-xl border border-brand-500/30">
+                    <i class="fa-solid fa-square-parking text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
-                        Estaciona<span class="text-orange-200">Fácil</span>
-                    </h1>
-                    <p class="text-xs text-orange-100 font-medium">Sistema Inteligente de Gestão de Vagas</p>
+                    <h1 class="text-lg font-bold tracking-tight text-white">ParkMaster <span class="text-xs px-2 py-0.5 rounded-full bg-brand-600/30 text-brand-400 border border-brand-500/30 ml-1">Pro</span></h1>
+                    <p class="text-xs text-gray-400">Controle Inteligente de Estacionamento</p>
                 </div>
             </div>
-            
-            <div class="flex items-center gap-3">
-                <div class="bg-black/15 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 text-white text-sm flex items-center gap-2">
-                    <i class="fa-solid fa-clock text-orange-200"></i>
-                    <span id="current-time" class="font-semibold">--:--:--</span>
-                </div>
-                <button onclick="openConfigModal()" class="bg-white/10 hover:bg-white/20 text-white px-3.5 py-2 rounded-xl backdrop-blur-md border border-white/20 transition-all text-sm font-medium flex items-center gap-2 shadow-sm">
-                    <i class="fa-solid fa-gear"></i> Configurações
+            <div class="flex items-center space-x-3">
+                <button onclick="openConfigModal()" class="flex items-center space-x-2 px-3.5 py-2 bg-dark-700 hover:bg-dark-600 text-gray-300 hover:text-white text-sm font-medium rounded-xl transition border border-dark-600">
+                    <i class="fa-solid fa-gear text-brand-400"></i>
+                    <span class="hidden sm:inline">Configurações</span>
+                </button>
+                <button onclick="openCheckinModal()" class="flex items-center space-x-2 px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white text-sm font-semibold rounded-xl transition shadow-lg shadow-brand-600/25">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Novo Veículo</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 overflow-y-auto">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full space-y-8">
         
-        <!-- Dashboard Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             <!-- Total Vagas -->
-            <div class="bg-white/80 backdrop-blur-xl p-5 rounded-2xl border border-orange-200 shadow-sm hover:shadow-md transition-all flex items-center justify-between group">
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-orange-600/80">Total de Vagas</p>
-                    <h3 id="stat-total-vagas" class="text-3xl font-extrabold text-orange-950 mt-1">50</h3>
-                    <p class="text-xs text-orange-700/70 mt-1">Capacidade máxima</p>
+            <div class="bg-dark-800 border border-dark-700/80 rounded-2xl p-5 shadow-sm relative overflow-hidden group hover:border-brand-500/50 transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Capacidade Total</p>
+                        <h3 id="statTotalSpots" class="text-2xl sm:text-3xl font-bold text-white mt-1">50</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-warehouse text-lg"></i>
+                    </div>
                 </div>
-                <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600 group-hover:scale-110 transition-transform">
-                    <i class="fa-solid fa-car text-xl"></i>
+                <div class="mt-4 flex items-center text-xs text-gray-400">
+                    <span class="text-blue-400 font-medium mr-1"><i class="fa-solid fa-circle text-[8px] mr-1"></i> Configurado</span> no sistema
                 </div>
             </div>
 
             <!-- Vagas Ocupadas -->
-            <div class="bg-white/80 backdrop-blur-xl p-5 rounded-2xl border border-orange-200 shadow-sm hover:shadow-md transition-all flex items-center justify-between group">
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-coral font-bold">Vagas Ocupadas</p>
-                    <h3 id="stat-vagas-ocupadas" class="text-3xl font-extrabold text-coral mt-1">0</h3>
-                    <p id="stat-ocupacao-pct" class="text-xs text-coral/80 mt-1">0% preenchido</p>
+            <div class="bg-dark-800 border border-dark-700/80 rounded-2xl p-5 shadow-sm relative overflow-hidden group hover:border-brand-500/50 transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Vagas Ocupadas</p>
+                        <h3 id="statOccupied" class="text-2xl sm:text-3xl font-bold text-amber-400 mt-1">0</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-car-side text-lg"></i>
+                    </div>
                 </div>
-                <div class="w-12 h-12 bg-coral/10 rounded-xl flex items-center justify-center text-coral group-hover:scale-110 transition-transform">
-                    <i class="fa-solid fa-square-parking text-xl"></i>
+                <div class="mt-4 flex items-center text-xs text-gray-400">
+                    <span id="occupancyRate" class="text-amber-400 font-semibold mr-1">0%</span> da capacidade total
                 </div>
             </div>
 
             <!-- Vagas Livres -->
-            <div class="bg-white/80 backdrop-blur-xl p-5 rounded-2xl border border-orange-200 shadow-sm hover:shadow-md transition-all flex items-center justify-between group">
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-emerald-600">Vagas Disponíveis</p>
-                    <h3 id="stat-vagas-livres" class="text-3xl font-extrabold text-emerald-700 mt-1">50</h3>
-                    <p class="text-xs text-emerald-600/80 mt-1">Disponíveis agora</p>
+            <div class="bg-dark-800 border border-dark-700/80 rounded-2xl p-5 shadow-sm relative overflow-hidden group hover:border-brand-500/50 transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Vagas Livres</p>
+                        <h3 id="statFree" class="text-2xl sm:text-3xl font-bold text-emerald-400 mt-1">50</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-square-check text-lg"></i>
+                    </div>
                 </div>
-                <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
-                    <i class="fa-solid fa-circle-check text-xl"></i>
+                <div class="mt-4 flex items-center text-xs text-gray-400">
+                    <span class="text-emerald-400 font-medium mr-1"><i class="fa-solid fa-arrow-up text-[10px]"></i> Disponível</span> para entrada
                 </div>
             </div>
 
-            <!-- Faturamento Total -->
-            <div class="bg-white/80 backdrop-blur-xl p-5 rounded-2xl border border-orange-200 shadow-sm hover:shadow-md transition-all flex items-center justify-between group">
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-amber-600">Faturamento Hoje</p>
-                    <h3 id="stat-faturamento" class="text-3xl font-extrabold text-amber-700 mt-1">R$ 0,00</h3>
-                    <p class="text-xs text-amber-600/80 mt-1">Tarifa: <span id="display-tarifa">R$ 10,00</span>/h</p>
+            <!-- Faturamento Acumulado -->
+            <div class="bg-dark-800 border border-dark-700/80 rounded-2xl p-5 shadow-sm relative overflow-hidden group hover:border-brand-500/50 transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Faturamento Total</p>
+                        <h3 id="statRevenue" class="text-2xl sm:text-3xl font-bold text-brand-400 mt-1">R$ 0,00</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-400 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-wallet text-lg"></i>
+                    </div>
                 </div>
-                <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
-                    <i class="fa-solid fa-wallet text-xl"></i>
+                <div class="mt-4 flex items-center text-xs text-gray-400">
+                    <span class="text-brand-400 font-medium mr-1"><i class="fa-solid fa-chart-line"></i> Sessão atual</span> de caixa
                 </div>
             </div>
         </div>
 
-        <!-- Main Actions & Registration Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            <!-- Formulário de Entrada (1 coluna) -->
-            <div class="bg-white/90 backdrop-blur-xl p-6 rounded-3xl border border-orange-200 shadow-md">
-                <div class="flex items-center justify-between mb-5">
-                    <h2 class="text-lg font-bold text-orange-950 flex items-center gap-2">
-                        <i class="fa-solid fa-circle-plus text-orange-600"></i> Registrar Entrada
-                    </h2>
-                    <span class="text-xs bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full font-semibold">Novo Veículo</span>
-                </div>
-
-                <form id="form-entrada" onsubmit="registrarEntrada(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-orange-900 mb-1.5">Placa do Veículo</label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-orange-400 pointer-events-none">
-                                <i class="fa-solid fa-id-card"></i>
-                            </span>
-                            <input type="text" id="placa" required placeholder="Ex: ABC-1234 ou ABC1D23" 
-                                class="w-full pl-10 pr-4 py-2.5 bg-orange-50/50 border border-orange-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white text-sm font-semibold uppercase tracking-wider placeholder:normal-case placeholder:font-normal placeholder:text-orange-300">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-orange-900 mb-1.5">Modelo / Marca</label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-orange-400 pointer-events-none">
-                                <i class="fa-solid fa-car-side"></i>
-                            </span>
-                            <input type="text" id="modelo" required placeholder="Ex: Fiat Palio, Honda Civic" 
-                                class="w-full pl-10 pr-4 py-2.5 bg-orange-50/50 border border-orange-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white text-sm placeholder:text-orange-300">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-orange-900 mb-1.5">Cor</label>
-                            <input type="text" id="cor" required placeholder="Ex: Prata" 
-                                class="w-full px-3 py-2.5 bg-orange-50/50 border border-orange-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white text-sm placeholder:text-orange-300">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-orange-900 mb-1.5">Tipo</label>
-                            <select id="tipo" class="w-full px-3 py-2.5 bg-orange-50/50 border border-orange-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white text-sm font-medium">
-                                <option value="Carro">Carro</option>
-                                <option value="Moto">Moto</option>
-                                <option value="Van">Van / SUV</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-orange-900 mb-1.5">Horário de Entrada</label>
-                        <input type="time" id="horario-entrada" required 
-                            class="w-full px-3 py-2.5 bg-orange-50/50 border border-orange-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white text-sm font-medium">
-                    </div>
-
-                    <button type="submit" class="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-orange-600/30 transition-all flex items-center justify-center gap-2 text-sm mt-2">
-                        <i class="fa-solid fa-arrow-right-to-bracket"></i> Estacionar Veículo
+        <div class="bg-dark-800 border border-dark-700 rounded-2xl shadow-sm overflow-hidden">
+            <!-- Navigation Tabs & Search Bar -->
+            <div class="p-5 border-b border-dark-700 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div class="flex space-x-2 bg-dark-900 p-1 rounded-xl border border-dark-700 self-start">
+                    <button onclick="switchTab('active')" id="tabActiveBtn" class="px-4 py-2 text-sm font-semibold rounded-lg bg-brand-600 text-white transition shadow">
+                        <i class="fa-solid fa-car mr-2"></i> Estacionados (<span id="activeCountBadge">0</span>)
                     </button>
-                </form>
-            </div>
-
-            <!-- Lista e Ações (2 colunas) -->
-            <div class="lg:col-span-2 bg-white/90 backdrop-blur-xl p-6 rounded-3xl border border-orange-200 shadow-md flex flex-col">
-                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
-                    <div>
-                        <h2 class="text-lg font-bold text-orange-950 flex items-center gap-2">
-                            <i class="fa-solid fa-list text-orange-600"></i> Veículos Estacionados
-                        </h2>
-                        <p class="text-xs text-orange-700/70">Acompanhe tempo real e faça saídas</p>
-                    </div>
-                    <div class="w-full sm:w-auto relative">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-orange-400 pointer-events-none">
-                            <i class="fa-solid fa-search"></i>
-                        </span>
-                        <input type="text" id="filtro-placa" onkeyup="renderizarTabela()" placeholder="Buscar placa ou modelo..." 
-                            class="w-full sm:w-64 pl-9 pr-3 py-2 bg-orange-50/50 border border-orange-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-xs placeholder:text-orange-300">
-                    </div>
+                    <button onclick="switchTab('history')" id="tabHistoryBtn" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-400 hover:text-white transition">
+                        <i class="fa-solid fa-clock-rotate-left mr-2"></i> Histórico de Saídas
+                    </button>
                 </div>
 
-                <!-- Tabela de Veículos -->
-                <div class="flex-1 overflow-x-auto min-h-[300px] max-h-[400px] rounded-2xl border border-orange-100">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="bg-orange-100/70 text-orange-900 text-xs uppercase tracking-wider sticky top-0 z-10">
-                            <tr>
-                                <th class="py-3 px-4 font-bold">Veículo / Placa</th>
-                                <th class="py-3 px-4 font-bold">Tipo & Cor</th>
-                                <th class="py-3 px-4 font-bold">Entrada</th>
-                                <th class="py-3 px-4 font-bold">Tempo Decorrido</th>
-                                <th class="py-3 px-4 font-bold text-center">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabela-estacionados" class="divide-y divide-orange-100 text-sm">
-                            <!-- Inserido dinamicamente via JS -->
-                        </tbody>
-                    </table>
+                <div class="relative w-full md:w-72">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                        <i class="fa-solid fa-search"></i>
+                    </span>
+                    <input type="text" id="searchInput" oninput="filterData()" placeholder="Buscar por placa ou modelo..." class="w-full pl-10 pr-4 py-2.5 bg-dark-900 border border-dark-700 rounded-xl text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-brand-500 transition">
                 </div>
             </div>
-        </div>
 
-        <!-- Seção de Histórico de Veículos -->
-        <div class="bg-white/90 backdrop-blur-xl p-6 rounded-3xl border border-orange-200 shadow-md">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
-                <div>
-                    <h2 class="text-lg font-bold text-orange-950 flex items-center gap-2">
-                        <i class="fa-solid fa-clock-rotate-left text-orange-600"></i> Histórico de Saídas
-                    </h2>
-                    <p class="text-xs text-orange-700/70">Registro de veículos que já deixaram o estacionamento</p>
-                </div>
-                <button onclick="limparHistorico()" class="text-xs bg-red-100 hover:bg-red-200 text-coral font-bold px-3 py-2 rounded-xl transition-all flex items-center gap-1.5">
-                    <i class="fa-solid fa-trash-can"></i> Limpar Histórico
-                </button>
-            </div>
-
-            <div class="overflow-x-auto max-h-[300px] rounded-2xl border border-orange-100">
+            <!-- Active Vehicles Table -->
+            <div id="activeTabContent" class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
-                    <thead class="bg-orange-100/70 text-orange-900 text-xs uppercase tracking-wider sticky top-0 z-10">
-                        <tr>
-                            <th class="py-3 px-4 font-bold">Placa / Modelo</th>
-                            <th class="py-3 px-4 font-bold">Entrada</th>
-                            <th class="py-3 px-4 font-bold">Saída</th>
-                            <th class="py-3 px-4 font-bold">Tempo Total</th>
-                            <th class="py-3 px-4 font-bold text-right">Valor Pago</th>
+                    <thead>
+                        <tr class="bg-dark-900/50 border-b border-dark-700 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                            <th class="py-3.5 px-6">Veículo / Tipo</th>
+                            <th class="py-3.5 px-6">Placa</th>
+                            <th class="py-3.5 px-6">Cor</th>
+                            <th class="py-3.5 px-6">Entrada</th>
+                            <th class="py-3.5 px-6">Tempo Decorrido</th>
+                            <th class="py-3.5 px-6 text-right">Ações</th>
                         </tr>
                     </thead>
-                    <tbody id="tabela-historico" class="divide-y divide-orange-100 text-sm">
-                        <!-- Inserido dinamicamente -->
+                    <tbody id="activeVehiclesList" class="divide-y divide-dark-700 text-sm">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- History Table (Hidden by default) -->
+            <div id="historyTabContent" class="overflow-x-auto hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-dark-900/50 border-b border-dark-700 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                            <th class="py-3.5 px-6">Veículo / Tipo</th>
+                            <th class="py-3.5 px-6">Placa</th>
+                            <th class="py-3.5 px-6">Entrada</th>
+                            <th class="py-3.5 px-6">Saída</th>
+                            <th class="py-3.5 px-6">Tempo Total</th>
+                            <th class="py-3.5 px-6 text-right">Valor Pago</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyVehiclesList" class="divide-y divide-dark-700 text-sm">
+                        <!-- Populated dynamically -->
                     </tbody>
                 </table>
             </div>
         </div>
-
     </main>
 
-    <!-- Modal de Checkout / Saída -->
-    <div id="modal-checkout" class="fixed inset-0 bg-orange-950/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-orange-200 animate-fade-in">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-orange-950 flex items-center gap-2">
-                    <i class="fa-solid fa-receipt text-orange-600"></i> Finalizar Saída
+    <!-- Checkin Modal -->
+    <div id="checkinModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm hidden">
+        <div class="bg-dark-800 border border-dark-700 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl transform transition-all">
+            <div class="px-6 py-4 border-b border-dark-700 flex items-center justify-between">
+                <h3 class="text-lg font-bold text-white flex items-center">
+                    <i class="fa-solid fa-car-tunnel text-brand-400 mr-2"></i> Registrar Entrada de Veículo
                 </h3>
-                <button onclick="fecharModalCheckout()" class="text-orange-400 hover:text-orange-700 p-1 rounded-xl">
+                <button onclick="closeCheckinModal()" class="text-gray-400 hover:text-white transition">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
-
-            <div id="checkout-detalhes" class="space-y-3 bg-orange-50/70 p-4 rounded-2xl border border-orange-100 text-sm mb-5">
-                <!-- Preenchido via JS -->
-            </div>
-
-            <div class="flex gap-3">
-                <button onclick="fecharModalCheckout()" class="flex-1 bg-orange-100 hover:bg-orange-200 text-orange-800 font-bold py-2.5 px-4 rounded-xl transition-all text-sm">
-                    Cancelar
-                </button>
-                <button onclick="confirmarSaida()" class="flex-1 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-md transition-all text-sm flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-check"></i> Confirmar Pagamento
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de Configurações -->
-    <div id="modal-config" class="fixed inset-0 bg-orange-950/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-orange-200 animate-fade-in">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-orange-950 flex items-center gap-2">
-                    <i class="fa-solid fa-sliders text-orange-600"></i> Configurações do Sistema
-                </h3>
-                <button onclick="fecharConfigModal()" class="text-orange-400 hover:text-orange-700 p-1 rounded-xl">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-
-            <form onsubmit="salvarConfiguracoes(event)" class="space-y-4">
+            <form id="checkinForm" onsubmit="handleCheckin(event)" class="p-6 space-y-4">
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-orange-900 mb-1.5">Capacidade Total de Vagas</label>
-                    <input type="number" id="config-capacidade" min="1" max="500" required 
-                        class="w-full px-3 py-2.5 bg-orange-50/50 border border-orange-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold">
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Placa do Veículo</label>
+                    <input type="text" id="carPlate" required placeholder="Ex: ABC-1234 ou ABC1D23" class="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 uppercase transition">
                 </div>
-
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Modelo</label>
+                        <input type="text" id="carModel" required placeholder="Ex: Corolla, Civic" class="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Cor</label>
+                        <input type="text" id="carColor" required placeholder="Ex: Prata, Preto" class="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-orange-900 mb-1.5">Tarifa por Hora (R$)</label>
-                    <input type="number" id="config-tarifa" min="0" step="0.50" required 
-                        class="w-full px-3 py-2.5 bg-orange-50/50 border border-orange-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold">
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Tipo de Veículo</label>
+                    <select id="carType" class="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-xl text-sm text-white focus:outline-none focus:border-brand-500 transition">
+                        <option value="carro">Carro (Passeio)</option>
+                        <option value="moto">Moto</option>
+                        <option value="caminhonete">Caminhonete / SUV</option>
+                        <option value="van">Van / Utilitário</option>
+                    </select>
                 </div>
-
-                <div class="flex gap-3 pt-2">
-                    <button type="button" onclick="fecharConfigModal()" class="flex-1 bg-orange-100 hover:bg-orange-200 text-orange-800 font-bold py-2.5 px-4 rounded-xl transition-all text-sm">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="flex-1 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-md transition-all text-sm">
-                        Salvar Alterações
-                    </button>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Horário de Entrada</label>
+                    <input type="datetime-local" id="carEntryTime" required class="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-xl text-sm text-white focus:outline-none focus:border-brand-500 transition">
+                </div>
+                <div class="pt-4 flex items-center justify-end space-x-3">
+                    <button type="button" onclick="closeCheckinModal()" class="px-4 py-2.5 bg-dark-700 hover:bg-dark-600 text-gray-300 text-sm font-medium rounded-xl transition">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white text-sm font-semibold rounded-xl transition shadow-lg shadow-brand-600/25">Confirmar Entrada</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Modal de Alerta / Toast personalizado -->
-    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+    <!-- Checkout Modal / Receipt -->
+    <div id="checkoutModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm hidden">
+        <div class="bg-dark-800 border border-dark-700 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl transform transition-all">
+            <div class="px-6 py-4 border-b border-dark-700 flex items-center justify-between">
+                <h3 class="text-lg font-bold text-white flex items-center">
+                    <i class="fa-solid fa-receipt text-emerald-400 mr-2"></i> Pagamento e Saída
+                </h3>
+                <button onclick="closeCheckoutModal()" class="text-gray-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="checkoutVehicleId">
+                <div class="bg-dark-900 p-4 rounded-xl border border-dark-700 space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Veículo:</span>
+                        <span id="receiptModel" class="font-semibold text-white">--</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Placa:</span>
+                        <span id="receiptPlate" class="font-mono font-bold text-brand-400">--</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Entrada:</span>
+                        <span id="receiptEntry" class="text-gray-200">--</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Saída:</span>
+                        <span id="receiptExit" class="text-gray-200">--</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Tempo Total:</span>
+                        <span id="receiptDuration" class="font-semibold text-white">--</span>
+                    </div>
+                    <div class="border-t border-dark-700 pt-3 flex justify-between items-center">
+                        <span class="text-gray-300 font-semibold">Valor a Pagar:</span>
+                        <span id="receiptAmount" class="text-xl font-bold text-emerald-400">R$ 0,00</span>
+                    </div>
+                </div>
+                <div class="pt-2 flex items-center justify-end space-x-3">
+                    <button type="button" onclick="closeCheckoutModal()" class="px-4 py-2.5 bg-dark-700 hover:bg-dark-600 text-gray-300 text-sm font-medium rounded-xl transition">Cancelar</button>
+                    <button type="button" onclick="confirmCheckout()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold rounded-xl transition shadow-lg shadow-emerald-600/25">Receber e Liberar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Config Modal -->
+    <div id="configModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm hidden">
+        <div class="bg-dark-800 border border-dark-700 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl transform transition-all">
+            <div class="px-6 py-4 border-b border-dark-700 flex items-center justify-between">
+                <h3 class="text-lg font-bold text-white flex items-center">
+                    <i class="fa-solid fa-sliders text-brand-400 mr-2"></i> Configurações do Estacionamento
+                </h3>
+                <button onclick="closeConfigModal()" class="text-gray-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form id="configForm" onsubmit="saveConfig(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Capacidade Total de Vagas</label>
+                    <input type="number" id="confTotalSpots" required min="1" class="w-full px-4 py-2.5 bg-dark-900 border border-dark-700 rounded-xl text-sm text-white focus:outline-none focus:border-brand-500 transition">
+                </div>
+                <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider pt-2 border-t border-dark-700">Tabela de Preços por Hora (R$)</h4>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Carro</label>
+                        <input type="number" step="0.50" id="priceCar" required min="0" class="w-full px-4 py-2 bg-dark-900 border border-dark-700 rounded-xl text-sm text-white focus:outline-none focus:border-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Moto</label>
+                        <input type="number" step="0.50" id="priceMoto" required min="0" class="w-full px-4 py-2 bg-dark-900 border border-dark-700 rounded-xl text-sm text-white focus:outline-none focus:border-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Caminhonete / SUV</label>
+                        <input type="number" step="0.50" id="priceCaminhonete" required min="0" class="w-full px-4 py-2 bg-dark-900 border border-dark-700 rounded-xl text-sm text-white focus:outline-none focus:border-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Van / Utilitário</label>
+                        <input type="number" step="0.50" id="priceVan" required min="0" class="w-full px-4 py-2 bg-dark-900 border border-dark-700 rounded-xl text-sm text-white focus:outline-none focus:border-brand-500">
+                    </div>
+                </div>
+                <div class="pt-4 flex items-center justify-end space-x-3">
+                    <button type="button" onclick="closeConfigModal()" class="px-4 py-2.5 bg-dark-700 hover:bg-dark-600 text-gray-300 text-sm font-medium rounded-xl transition">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white text-sm font-semibold rounded-xl transition shadow-lg shadow-brand-600/25">Salvar Configurações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div id="toastContent" class="flex items-center space-x-3 px-4 py-3 bg-dark-800 border border-dark-700 rounded-xl shadow-2xl text-sm text-white">
+            <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+            <span id="toastMessage">Operação realizada com sucesso!</span>
+        </div>
+    </div>
+
+    <footer class="bg-dark-800 border-t border-dark-700 mt-12 py-6 text-center text-xs text-gray-400">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p>&copy; 2026 ParkMaster. Todos os direitos reservados.</p>
+            <div class="flex space-x-4">
+                <span class="hover:text-gray-300 cursor-pointer">Termos de Uso</span>
+                <span class="hover:text-gray-300 cursor-pointer">Privacidade</span>
+                <span class="hover:text-gray-300 cursor-pointer">Suporte Técnico</span>
+            </div>
+        </div>
+    </footer>
 
     <script>
-        // Estado Global da Aplicação
-        let estado = {
-            capacidade: 50,
-            tarifaHora: 10.00,
-            faturamentoTotal: 0,
-            veiculosEstacionados: [],
-            historico: []
-        };
-
-        let veiculoSelecionadoId = null;
-
-        // Inicializar Sistema
-        window.onload = function() {
-            carregarDadosStorage();
-            atualizarRelogio();
-            setInterval(atualizarRelogio, 1000);
-            setInterval(renderizarTabela, 1000); // Atualizar cronômetros em tempo real a cada segundo
-            
-            // Definir horário atual por padrão no formulário
-            const agora = new Date();
-            const horaFormatada = String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0');
-            document.getElementById('horario-entrada').value = horaFormatada;
-        };
-
-        // Relógio em tempo real no cabeçalho
-        function atualizarRelogio() {
-            const agora = new Date();
-            document.getElementById('current-time').innerText = agora.toLocaleTimeString('pt-BR');
-        }
-
-        // LocalStorage - Salvar e Carregar
-        function salvarDadosStorage() {
-            localStorage.setItem('estacionamento_estado', JSON.stringify(estado));
-        }
-
-        function carregarDadosStorage() {
-            const dadosSalvos = localStorage.getItem('estacionamento_estado');
-            if (dadosSalvos) {
-                try {
-                    estado = JSON.parse(dadosSalvos);
-                } catch(e) {
-                    console.error("Erro ao carregar dados do LocalStorage", e);
+        // State Management
+        let appData = {
+            config: {
+                totalSpots: 50,
+                prices: {
+                    carro: 10.00,
+                    moto: 6.00,
+                    caminhonete: 14.00,
+                    van: 18.00
                 }
+            },
+            activeVehicles: [],
+            historyVehicles: [],
+            totalRevenue: 0.00
+        };
+
+        // Load data from localStorage if available
+        function loadStorage() {
+            const saved = localStorage.getItem('parkmaster_data');
+            if (saved) {
+                try {
+                    appData = JSON.parse(saved);
+                } catch (e) {
+                    console.error("Erro ao carregar dados locais", e);
+                }
+            } else {
+                // Seed some demo active vehicles for a rich initial experience
+                appData.activeVehicles = [
+                    { id: '1', plate: 'ABC-1234', model: 'Honda Civic', color: 'Prata', type: 'carro', entryTime: new Date(Date.now() - 3600000 * 2.5).toISOString() },
+                    { id: '2', plate: 'XYZ-9876', model: 'Yamaha Fazer', color: 'Vermelho', type: 'moto', entryTime: new Date(Date.now() - 3600000 * 1.2).toISOString() },
+                    { id: '3', plate: 'DEF-5678', model: 'Toyota Hilux', color: 'Branco', type: 'caminhonete', entryTime: new Date(Date.now() - 3600000 * 4.1).toISOString() }
+                ];
+                saveStorageToDisk();
             }
-            atualizarDashboard();
-            renderizarTabela();
-            renderizarHistorico();
         }
 
-        // Registrar Nova Entrada
-        function registrarEntrada(event) {
-            event.preventDefault();
+        function saveStorageToDisk() {
+            localStorage.setItem('parkmaster_data', JSON.stringify(appData));
+        }
 
-            if (estado.veiculosEstacionados.length >= estado.capacidade) {
-                mostrarToast("Estacionamento Lotado! Não há vagas disponíveis.", "erro");
-                return;
-            }
-
-            const placa = document.getElementById('placa').value.trim().toUpperCase();
-            const modelo = document.getElementById('modelo').value.trim();
-            const cor = document.getElementById('cor').value.trim();
-            const tipo = document.getElementById('tipo').value;
-            const horarioEntradaInput = document.getElementById('horario-entrada').value;
-
-            // Verificar se placa já está estacionada
-            if (estado.veiculosEstacionados.some(v => v.placa === placa)) {
-                mostrarToast(`O veículo com placa ${placa} já está estacionado!`, "erro");
-                return;
-            }
-
-            // Converter horario de entrada em timestamp real de hoje
-            const [horas, minutos] = horarioEntradaInput.split(':');
-            const dataEntrada = new Date();
-            dataEntrada.setHours(parseInt(horas), parseInt(minutos), 0, 0);
-
-            const novoVeiculo = {
-                id: Date.now().toString(),
-                placa,
-                modelo,
-                cor,
-                tipo,
-                entradaTimestamp: dataEntrada.getTime(),
-                entradaStr: horarioEntradaInput
-            };
-
-            estado.veiculosEstacionados.push(novoVeiculo);
-            salvarDadosStorage();
+        // Initialize UI on load
+        window.onload = function() {
+            loadStorage();
+            updateDashboard();
+            renderActiveVehicles();
+            renderHistoryVehicles();
             
-            atualizarDashboard();
-            renderizarTabela();
+            // Set default date-time input value to current time
+            setDefaultEntryTime();
+            
+            // Periodically update active durations every 30 seconds
+            setInterval(() => {
+                if (currentTab === 'active') {
+                    renderActiveVehicles();
+                }
+            }, 30000);
+        };
 
-            // Resetar formulário mantendo horário atual
-            document.getElementById('form-entrada').reset();
-            const agora = new Date();
-            document.getElementById('horario-entrada').value = String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0');
-
-            mostrarToast(`Veículo ${placa} registrado com sucesso!`, "sucesso");
+        function setDefaultEntryTime() {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('carEntryTime').value = now.toISOString().slice(0, 16);
         }
 
-        // Atualizar Métricas do Dashboard
-        function atualizarDashboard() {
-            const total = estado.capacidade;
-            const ocupadas = estado.veiculosEstacionados.length;
-            const livres = Math.max(0, total - ocupadas);
-            const pctOcupacao = total > 0 ? Math.round((ocupadas / total) * 100) : 0;
+        // Tab Switching
+        let currentTab = 'active';
+        function switchTab(tab) {
+            currentTab = tab;
+            const activeBtn = document.getElementById('tabActiveBtn');
+            const historyBtn = document.getElementById('tabHistoryBtn');
+            const activeContent = document.getElementById('activeTabContent');
+            const historyContent = document.getElementById('historyTabContent');
 
-            document.getElementById('stat-total-vagas').innerText = total;
-            document.getElementById('stat-vagas-ocupadas').innerText = ocupadas;
-            document.getElementById('stat-vagas-livres').innerText = livres;
-            document.getElementById('stat-ocupacao-pct').innerText = `${pctOcupacao}% preenchido`;
-            document.getElementById('stat-faturamento').innerText = `R$ ${estado.faturamentoTotal.toFixed(2).replace('.', ',')}`;
-            document.getElementById('display-tarifa').innerText = `R$ ${estado.tarifaHora.toFixed(2).replace('.', ',')}`;
+            if (tab === 'active') {
+                activeBtn.className = "px-4 py-2 text-sm font-semibold rounded-lg bg-brand-600 text-white transition shadow";
+                historyBtn.className = "px-4 py-2 text-sm font-medium rounded-lg text-gray-400 hover:text-white transition";
+                activeContent.classList.remove('hidden');
+                historyContent.classList.add('hidden');
+            } else {
+                historyBtn.className = "px-4 py-2 text-sm font-semibold rounded-lg bg-brand-600 text-white transition shadow";
+                activeBtn.className = "px-4 py-2 text-sm font-medium rounded-lg text-gray-400 hover:text-white transition";
+                historyContent.classList.remove('hidden');
+                activeContent.classList.add('hidden');
+            }
+            filterData();
         }
 
-        // Renderizar Tabela de Veículos Estacionados
-        function renderizarTabela() {
-            const tbody = document.getElementById('tabela-estacionados');
-            const filtro = document.getElementById('filtro-placa').value.toLowerCase();
-            tbody.innerHTML = '';
+        // Dashboard Metrics Update
+        function updateDashboard() {
+            const total = appData.config.totalSpots;
+            const occupied = appData.activeVehicles.length;
+            const free = Math.max(0, total - occupied);
+            const occupancyPct = total > 0 ? Math.round((occupied / total) * 100) : 0;
 
-            const veiculosFiltrados = estado.veiculosEstacionados.filter(v => 
-                v.placa.toLowerCase().includes(filtro) || v.modelo.toLowerCase().includes(filtro)
-            );
+            document.getElementById('statTotalSpots').innerText = total;
+            document.getElementById('statOccupied').innerText = occupied;
+            document.getElementById('statFree').innerText = free;
+            document.getElementById('occupancyRate').innerText = occupancyPct + '%';
+            document.getElementById('activeCountBadge').innerText = occupied;
 
-            if (veiculosFiltrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-orange-400 text-sm">Nenhum veículo encontrado no estacionamento.</td></tr>`;
+            // Calculate total revenue from history + current session variable
+            let rev = appData.historyVehicles.reduce((acc, item) => acc + (item.amountPaid || 0), 0);
+            document.getElementById('statRevenue').innerText = 'R$ ' + rev.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        // Vehicle Type Icon & Badge Helper
+        function getTypeDetails(type) {
+            switch(type) {
+                case 'moto':
+                    return { label: 'Moto', icon: 'fa-motorcycle', color: 'text-purple-400 bg-purple-500/10 border-purple-500/20' };
+                case 'caminhonete':
+                    return { label: 'Caminhonete', icon: 'fa-truck-pickup', color: 'text-blue-400 bg-blue-500/10 border-blue-500/20' };
+                case 'van':
+                    return { label: 'Van/Utilitário', icon: 'fa-van-shuttle', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' };
+                default:
+                    return { label: 'Carro', icon: 'fa-car', color: 'text-brand-400 bg-brand-500/10 border-brand-500/20' };
+            }
+        }
+
+        // Format Duration
+        function formatDuration(entryTimeStr) {
+            const entry = new Date(entryTimeStr);
+            const now = new Date();
+            const diffMs = now - entry;
+            if (diffMs < 0) return '0 min';
+
+            const diffMins = Math.floor(diffMs / 60000);
+            const hours = Math.floor(diffMins / 60);
+            const mins = diffMins % 60;
+
+            if (hours === 0) return `${mins} min`;
+            return `${hours}h ${mins}min`;
+        }
+
+        // Render Active Vehicles
+        function renderActiveVehicles(listToRender = null) {
+            const tbody = document.getElementById('activeVehiclesList');
+            const data = listToRender || appData.activeVehicles;
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-10 text-center text-gray-500"><i class="fa-solid fa-car-side text-3xl mb-2 block text-gray-600"></i> Nenhum veículo estacionado no momento.</td></tr>`;
                 return;
             }
 
-            const agoraTimestamp = Date.now();
+            tbody.innerHTML = data.map(v => {
+                const typeInfo = getTypeDetails(v.type);
+                const entryFormatted = new Date(v.entryTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                const duration = formatDuration(v.entryTime);
 
-            veiculosFiltrados.forEach(v => {
-                const diffMs = agoraTimestamp - v.entradaTimestamp;
-                const diffMinutos = Math.max(0, Math.floor(diffMs / 60000));
-                const horasDecorridas = Math.floor(diffMinutos / 60);
-                const minutosRestantes = diffMinutos % 60;
+                return `
+                    <tr class="hover:bg-dark-700/50 transition">
+                        <td class="py-4 px-6">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 rounded-xl ${typeInfo.color} border flex items-center justify-center flex-shrink-0">
+                                    <i class="fa-solid ${typeInfo.icon}"></i>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-white">${v.model}</div>
+                                    <div class="text-xs text-gray-400">${typeInfo.label}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4 px-6 font-mono font-bold text-brand-400 tracking-wider">${v.plate}</td>
+                        <td class="py-4 px-6 text-gray-300">${v.color}</td>
+                        <td class="py-4 px-6 text-gray-300">${entryFormatted}</td>
+                        <td class="py-4 px-6">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-dark-700 text-gray-300 border border-dark-600">
+                                <i class="fa-regular fa-clock mr-1 text-brand-400"></i> ${duration}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6 text-right">
+                            <button onclick="openCheckoutModal('${v.id}')" class="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white text-xs font-semibold rounded-lg transition border border-emerald-500/30">
+                                <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> Saída
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Render History Vehicles
+        function renderHistoryVehicles(listToRender = null) {
+            const tbody = document.getElementById('historyVehiclesList');
+            const data = listToRender || appData.historyVehicles;
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-10 text-center text-gray-500"><i class="fa-solid fa-clock-rotate-left text-3xl mb-2 block text-gray-600"></i> Nenhum registro de saída encontrado.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = data.slice().reverse().map(v => {
+                const typeInfo = getTypeDetails(v.type);
+                const entryFormatted = new Date(v.entryTime).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+                const exitFormatted = new Date(v.exitTime).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
                 
-                const tempoStr = horasDecorridas > 0 ? `${horasDecorridas}h ${minutosRestantes}m` : `${minutosRestantes} min`;
-
-                let iconeTipo = 'fa-car';
-                if (v.tipo === 'Moto') iconeTipo = 'fa-motorcycle';
-                if (v.tipo === 'Van') iconeTipo = 'fa-van-shuttle';
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-orange-50/60 transition-colors border-b border-orange-100/50";
-                tr.innerHTML = `
-                    <td class="py-3 px-4">
-                        <div class="font-extrabold text-orange-950 tracking-wider">${v.placa}</div>
-                        <div class="text-xs text-orange-600/80 font-medium">${v.modelo}</div>
-                    </td>
-                    <td class="py-3 px-4">
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800">
-                            <i class="fa-solid ${iconeTipo}"></i> ${v.tipo}
-                        </span>
-                        <div class="text-xs text-orange-500 mt-1">${v.cor}</div>
-                    </td>
-                    <td class="py-3 px-4 font-semibold text-orange-900 text-xs">
-                        <i class="fa-regular fa-clock text-orange-400 mr-1"></i> ${v.entradaStr}
-                    </td>
-                    <td class="py-3 px-4">
-                        <span class="inline-block px-2.5 py-1 rounded-lg bg-amber-50 text-amber-700 font-bold text-xs border border-amber-200">
-                            ${tempoStr}
-                        </span>
-                    </td>
-                    <td class="py-3 px-4 text-center">
-                        <button onclick="abrirModalCheckout('${v.id}')" class="bg-gradient-to-r from-coral to-coral-dark hover:from-coral-dark hover:to-red-700 text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 mx-auto">
-                            <i class="fa-solid fa-arrow-right-from-bracket"></i> Saída
-                        </button>
-                    </td>
+                return `
+                    <tr class="hover:bg-dark-700/50 transition">
+                        <td class="py-4 px-6">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 rounded-xl ${typeInfo.color} border flex items-center justify-center flex-shrink-0">
+                                    <i class="fa-solid ${typeInfo.icon}"></i>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-white">${v.model}</div>
+                                    <div class="text-xs text-gray-400">${v.color}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4 px-6 font-mono font-bold text-gray-300 tracking-wider">${v.plate}</td>
+                        <td class="py-4 px-6 text-gray-300 text-xs">${entryFormatted}</td>
+                        <td class="py-4 px-6 text-gray-300 text-xs">${exitFormatted}</td>
+                        <td class="py-4 px-6 text-gray-300 text-sm font-medium">${v.durationFormatted}</td>
+                        <td class="py-4 px-6 text-right font-bold text-emerald-400">R$ ${v.amountPaid.toFixed(2).replace('.', ',')}</td>
+                    </tr>
                 `;
-                tbody.appendChild(tr);
-            });
+            }).join('');
         }
 
-        // Fluxo de Saída / Checkout
-        function abrirModalCheckout(id) {
-            veiculoSelecionadoId = id;
-            const veiculo = estado.veiculosEstacionados.find(v => v.id === id);
-            if (!veiculo) return;
+        // Filter / Search Logic
+        function filterData() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            if (currentTab === 'active') {
+                const filtered = appData.activeVehicles.filter(v => 
+                    v.plate.toLowerCase().includes(query) || v.model.toLowerCase().includes(query) || v.color.toLowerCase().includes(query)
+                );
+                renderActiveVehicles(filtered);
+            } else {
+                const filtered = appData.historyVehicles.filter(v => 
+                    v.plate.toLowerCase().includes(query) || v.model.toLowerCase().includes(query) || v.color.toLowerCase().includes(query)
+                );
+                renderHistoryVehicles(filtered);
+            }
+        }
 
-            const agoraTimestamp = Date.now();
-            const diffMs = agoraTimestamp - veiculo.entradaTimestamp;
-            const diffMinutos = Math.max(1, Math.ceil(diffMs / 60000)); // Cobrar pelo menos 1 minuto proporcional
-            const horasFracionadas = diffMinutos / 60;
-            
-            // Cálculo do valor: tarifa por hora proporcional ao minuto ou arredondada para cima por hora cheia
-            // Vamos cobrar proporcional ou mínimo 1 hora se preferir, ou cálculo exato ex: horas * tarifa
-            let valorCalculado = horasFracionadas * estado.tarifaHora;
-            if (valorCalculado < estado.tarifaHora / 2) {
-                valorCalculado = estado.tarifaHora / 2; // Tarifa mínima de 30 min
+        // Modal Handlers for Checkin
+        function openCheckinModal() {
+            if (appData.activeVehicles.length >= appData.config.totalSpots) {
+                showToast('Estacionamento lotado! Não há vagas disponíveis.', 'error');
+                return;
+            }
+            setDefaultEntryTime();
+            document.getElementById('checkinForm').reset();
+            setDefaultEntryTime();
+            document.getElementById('checkinModal').classList.remove('hidden');
+        }
+
+        function closeCheckinModal() {
+            document.getElementById('checkinModal').classList.add('hidden');
+        }
+
+        function handleCheckin(e) {
+            e.preventDefault();
+            const plate = document.getElementById('carPlate').value.toUpperCase().trim();
+            const model = document.getElementById('carModel').value.trim();
+            const color = document.getElementById('carColor').value.trim();
+            const type = document.getElementById('carType').value;
+            const entryTime = document.getElementById('carEntryTime').value;
+
+            // Check if plate already parked
+            if (appData.activeVehicles.some(v => v.plate === plate)) {
+                showToast('Já existe um veículo estacionado com esta placa!', 'error');
+                return;
             }
 
-            const horasDecorridas = Math.floor(diffMinutos / 60);
-            const minutosRestantes = diffMinutos % 60;
-            const tempoTotalStr = horasDecorridas > 0 ? `${horasDecorridas}h ${minutosRestantes}m` : `${minutosRestantes} minutos`;
-
-            const detalhesHtml = `
-                <div class="flex justify-between items-center pb-2 border-b border-orange-200">
-                    <span class="text-orange-700 font-medium">Placa:</span>
-                    <span class="font-extrabold text-orange-950 tracking-wider">${veiculo.placa}</span>
-                </div>
-                <div class="flex justify-between items-center pb-2 border-b border-orange-200">
-                    <span class="text-orange-700 font-medium">Veículo:</span>
-                    <span class="font-semibold text-orange-900">${veiculo.modelo} (${veiculo.cor})</span>
-                </div>
-                <div class="flex justify-between items-center pb-2 border-b border-orange-200">
-                    <span class="text-orange-700 font-medium">Horário de Entrada:</span>
-                    <span class="font-semibold text-orange-900">${veiculo.entradaStr}</span>
-                </div>
-                <div class="flex justify-between items-center pb-2 border-b border-orange-200">
-                    <span class="text-orange-700 font-medium">Tempo de Permanência:</span>
-                    <span class="font-bold text-amber-600">${tempoTotalStr}</span>
-                </div>
-                <div class="flex justify-between items-center pt-1">
-                    <span class="text-orange-900 font-bold text-base">Total a Pagar:</span>
-                    <span class="font-extrabold text-coral text-xl">R$ ${valorCalculado.toFixed(2).replace('.', ',')}</span>
-                </div>
-            `;
-
-            document.getElementById('checkout-detalhes').innerHTML = detalhesHtml;
-            document.getElementById('modal-checkout').classList.remove('hidden');
-        }
-
-        function fecharModalCheckout() {
-            document.getElementById('modal-checkout').classList.add('hidden');
-            veiculoSelecionadoId = null;
-        }
-
-        function confirmarSaida() {
-            if (!veiculoSelecionadoId) return;
-
-            const index = estado.veiculosEstacionados.findIndex(v => v.id === veiculoSelecionadoId);
-            if (index === -1) return;
-
-            const veiculo = estado.veiculosEstacionados[index];
-            const agora = new Date();
-            const saidaStr = String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0');
-
-            const agoraTimestamp = Date.now();
-            const diffMs = agoraTimestamp - veiculo.entradaTimestamp;
-            const diffMinutos = Math.max(1, Math.ceil(diffMs / 60000));
-            const horasFracionadas = diffMinutos / 60;
-            let valorCalculado = horasFracionadas * estado.tarifaHora;
-            if (valorCalculado < estado.tarifaHora / 2) valorCalculado = estado.tarifaHora / 2;
-
-            const horasDecorridas = Math.floor(diffMinutos / 60);
-            const minutosRestantes = diffMinutos % 60;
-            const tempoTotalStr = horasDecorridas > 0 ? `${horasDecorridas}h ${minutosRestantes}m` : `${minutosRestantes} min`;
-
-            // Adicionar ao faturamento e histórico
-            estado.faturamentoTotal += valorCalculado;
-            
-            const registroHistorico = {
-                ...veiculo,
-                saidaStr,
-                tempoTotal: tempoTotalStr,
-                valorPago: valorCalculado
+            const newVehicle = {
+                id: 'v_' + Date.now(),
+                plate,
+                model,
+                color,
+                type,
+                entryTime: new Date(entryTime).toISOString()
             };
 
-            estado.historico.unshift(registroHistorico); // Adicionar no início
-            estado.veiculosEstacionados.splice(index, 1);
-
-            salvarDadosStorage();
-            atualizarDashboard();
-            renderizarTabela();
-            renderizarHistorico();
-            fecharModalCheckout();
-
-            mostrarToast(`Checkout realizado com sucesso! Valor recebido: R$ ${valorCalculado.toFixed(2).replace('.', ',')}`, "sucesso");
+            appData.activeVehicles.push(newVehicle);
+            saveStorageToDisk();
+            updateDashboard();
+            renderActiveVehicles();
+            closeCheckinModal();
+            showToast('Veículo cadastrado com sucesso!');
         }
 
-        // Renderizar Histórico
-        function renderizarHistorico() {
-            const tbody = document.getElementById('tabela-historico');
-            tbody.innerHTML = '';
+        // Modal Handlers for Checkout / Billing calculation
+        let currentCheckoutVehicle = null;
 
-            if (estado.historico.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-orange-400 text-sm">Nenhum registro de saída no histórico.</td></tr>`;
-                return;
-            }
+        function openCheckoutModal(id) {
+            const vehicle = appData.activeVehicles.find(v => v.id === id);
+            if (!vehicle) return;
 
-            estado.historico.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-orange-50/50 transition-colors border-b border-orange-100/50";
-                tr.innerHTML = `
-                    <td class="py-3 px-4">
-                        <div class="font-extrabold text-orange-950 tracking-wider">${item.placa}</div>
-                        <div class="text-xs text-orange-600/70 font-medium">${item.modelo}</div>
-                    </td>
-                    <td class="py-3 px-4 text-xs font-medium text-orange-800">${item.entradaStr}</td>
-                    <td class="py-3 px-4 text-xs font-medium text-orange-800">${item.saidaStr}</td>
-                    <td class="py-3 px-4">
-                        <span class="bg-orange-100 text-orange-900 px-2.5 py-0.5 rounded-md text-xs font-semibold">
-                            ${item.tempoTotal}
-                        </span>
-                    </td>
-                    <td class="py-3 px-4 text-right font-extrabold text-emerald-700">
-                        R$ ${item.valorPago.toFixed(2).replace('.', ',')}
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
+            currentCheckoutVehicle = vehicle;
+            const entryDate = new Date(vehicle.entryTime);
+            const exitDate = new Date();
 
-        function limparHistorico() {
-            if (confirm("Deseja realmente limpar todo o histórico de saídas e o faturamento acumulado?")) {
-                estado.historico = [];
-                estado.faturamentoTotal = 0;
-                salvarDadosStorage();
-                atualizarDashboard();
-                renderizarHistorico();
-                mostrarToast("Histórico limpo com sucesso.", "sucesso");
-            }
-        }
-
-        // Modal de Configurações
-        function openConfigModal() {
-            document.getElementById('config-capacidade').value = estado.capacidade;
-            document.getElementById('config-tarifa').value = estado.tarifaHora;
-            document.getElementById('modal-config').classList.remove('hidden');
-        }
-
-        function fecharConfigModal() {
-            document.getElementById('modal-config').classList.add('hidden');
-        }
-
-        function salvarConfiguracoes(event) {
-            event.preventDefault();
-            const novaCapacidade = parseInt(document.getElementById('config-capacidade').value);
-            const novaTarifa = parseFloat(document.getElementById('config-tarifa').value);
-
-            if (novaCapacidade < estado.veiculosEstacionados.length) {
-                mostrarToast("A capacidade não pode ser menor que o número de veículos atualmente estacionados!", "erro");
-                return;
-            }
-
-            estado.capacidade = novaCapacidade;
-            estado.tarifaHora = novaTarifa;
-
-            salvarDadosStorage();
-            atualizarDashboard();
-            fecharConfigModal();
-
-            mostrarToast("Configurações atualizadas com sucesso!", "sucesso");
-        }
-
-        // Sistema de Toast / Alertas Visuais modernos (sem usar alert nativo)
-        function mostrarToast(mensagem, tipo = 'sucesso') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
+            // Calculate duration in hours (fractions included, minimum 1 hour or proportional)
+            const diffMs = exitDate - entryDate;
+            const diffHours = Math.max(0.25, diffMs / (1000 * 60 * 60)); // minimum quarter hour billing or continuous
             
-            const corBg = tipo === 'sucesso' ? 'bg-orange-900 text-white border-orange-700' : 'bg-coral text-white border-red-700';
-            const icone = tipo === 'sucesso' ? 'fa-circle-check text-orange-300' : 'fa-circle-exclamation text-red-200';
+            // Hourly rate based on vehicle type
+            const hourlyRate = appData.config.prices[vehicle.type] || 10.00;
+            const amount = diffHours * hourlyRate;
 
-            toast.className = `${corBg} px-4 py-3 rounded-2xl shadow-xl border flex items-center gap-3 pointer-events-auto animate-fade-in text-sm font-semibold max-w-sm`;
-            toast.innerHTML = `
-                <i class="fa-solid ${icone} text-lg"></i>
-                <span class="flex-1">${mensagem}</span>
-            `;
+            document.getElementById('checkoutVehicleId').value = vehicle.id;
+            document.getElementById('receiptModel').innerText = `${vehicle.model} (${vehicle.color})`;
+            document.getElementById('receiptPlate').innerText = vehicle.plate;
+            document.getElementById('receiptEntry').innerText = entryDate.toLocaleString('pt-BR');
+            document.getElementById('receiptExit').innerText = exitDate.toLocaleString('pt-BR');
+            document.getElementById('receiptDuration').innerText = formatDuration(vehicle.entryTime);
+            document.getElementById('receiptAmount').innerText = 'R$ ' + amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-            container.appendChild(toast);
+            // Store calculated amount temporarily on object for confirmation
+            currentCheckoutVehicle.calculatedAmount = amount;
+            currentCheckoutVehicle.exitTimeObj = exitDate.toISOString();
+            currentCheckoutVehicle.durationText = formatDuration(vehicle.entryTime);
 
+            document.getElementById('checkoutModal').classList.remove('hidden');
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById('checkoutModal').classList.add('hidden');
+            currentCheckoutVehicle = null;
+        }
+
+        function confirmCheckout() {
+            if (!currentCheckoutVehicle) return;
+
+            const completedVehicle = {
+                ...currentCheckoutVehicle,
+                exitTime: currentCheckoutVehicle.exitTimeObj,
+                durationFormatted: currentCheckoutVehicle.durationText,
+                amountPaid: currentCheckoutVehicle.calculatedAmount
+            };
+
+            // Remove from active
+            appData.activeVehicles = appData.activeVehicles.filter(v => v.id !== currentCheckoutVehicle.id);
+            // Push to history
+            appData.historyVehicles.push(completedVehicle);
+
+            saveStorageToDisk();
+            updateDashboard();
+            renderActiveVehicles();
+            renderHistoryVehicles();
+            closeCheckoutModal();
+            showToast('Pagamento registrado e veículo liberado!');
+        }
+
+        // Modal Handlers for Configuration
+        function openConfigModal() {
+            document.getElementById('confTotalSpots').value = appData.config.totalSpots;
+            document.getElementById('priceCar').value = appData.config.prices.carro;
+            document.getElementById('priceMoto').value = appData.config.prices.moto;
+            document.getElementById('priceCaminhonete').value = appData.config.prices.caminhonete;
+            document.getElementById('priceVan').value = appData.config.prices.van;
+            document.getElementById('configModal').classList.remove('hidden');
+        }
+
+        function closeConfigModal() {
+            document.getElementById('configModal').classList.add('hidden');
+        }
+
+        function saveConfig(e) {
+            e.preventDefault();
+            const totalSpots = parseInt(document.getElementById('confTotalSpots').value);
+            const car = parseFloat(document.getElementById('priceCar').value);
+            const moto = parseFloat(document.getElementById('priceMoto').value);
+            const caminhonete = parseFloat(document.getElementById('priceCaminhonete').value);
+            const van = parseFloat(document.getElementById('priceVan').value);
+
+            if (totalSpots < appData.activeVehicles.length) {
+                showToast('A nova capacidade é menor que o número de veículos atualmente estacionados!', 'error');
+                return;
+            }
+
+            appData.config.totalSpots = totalSpots;
+            appData.config.prices = { carro: car, moto: moto, caminhonete: caminhonete, van: van };
+
+            saveStorageToDisk();
+            updateDashboard();
+            closeConfigModal();
+            showToast('Configurações salvas com sucesso!');
+        }
+
+        // Toast Notification System
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMessage.innerText = message;
+            if (type === 'error') {
+                toastIcon.className = 'fa-solid fa-circle-exclamation text-rose-400';
+            } else {
+                toastIcon.className = 'fa-solid fa-circle-check text-emerald-400';
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
             setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateY(10px)';
-                toast.style.transition = 'all 0.3s ease';
-                setTimeout(() => toast.remove(), 300);
+                toast.classList.add('translate-y-20', 'opacity-0');
             }, 3500);
         }
     </script>
