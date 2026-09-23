@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParkMaster - Sistema de Gerenciamento de Estacionamento</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="h-full bg-slate-900 text-slate-100 font-sans antialiased flex flex-col">
+
+    <header class="bg-slate-800/80 backdrop-blur-md border-b border-slate-700 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 p-2.5 rounded-xl text-white shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-car text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">ParkMaster Pro</h1>
+                    <p class="text-xs text-slate-400">Gestão Inteligente de Estacionamento</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="openConfigModal()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3.5 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 border border-slate-600">
+                    <i class="fa-solid fa-gear"></i> <span class="hidden sm:inline">Configurar Preços</span>
+                </button>
+                <button onclick="openEntryModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 shadow-lg shadow-indigo-600/20">
+                    <i class="fa-solid fa-plus"></i> Novo Veículo
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 overflow-y-auto">
+
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-2xl shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-400">Vagas Totais</p>
+                    <h3 id="statTotalVagas" class="text-3xl font-bold text-slate-100 mt-1">50</h3>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-square-parking"></i>
+                </div>
+            </div>
+
+            <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-2xl shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-400">Vagas Ocupadas</p>
+                    <h3 id="statOcupadas" class="text-3xl font-bold text-amber-400 mt-1">0</h3>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-car-side"></i>
+                </div>
+            </div>
+
+            <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-2xl shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-400">Vagas Livres</p>
+                    <h3 id="statLivres" class="text-3xl font-bold text-emerald-400 mt-1">50</h3>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+            </div>
+
+            <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-2xl shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-400">Faturamento Total</p>
+                    <h3 id="statFaturamento" class="text-3xl font-bold text-cyan-400 mt-1">R$ 0,00</h3>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+            </div>
+        </section>
+
+        <section class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-700/60 pb-4">
+            <div class="flex space-x-2 bg-slate-800 p-1 rounded-xl w-fit border border-slate-700">
+                <button onclick="switchTab('ativos')" id="btnTabAtivos" class="px-4 py-2 rounded-lg text-sm font-medium transition bg-indigo-600 text-white shadow">
+                    Veículos Estacionados (<span id="countAtivos">0</span>)
+                </button>
+                <button onclick="switchTab('historico')" id="btnTabHistorico" class="px-4 py-2 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white">
+                    Histórico / Relatório (<span id="countHistorico">0</span>)
+                </button>
+            </div>
+
+            <div class="relative w-full md:w-80">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input type="text" id="searchInput" oninput="filterVehicles()" placeholder="Buscar por placa ou modelo..." class="w-full bg-slate-800 border border-slate-700 text-slate-100 pl-10 pr-4 py-2 rounded-xl text-sm focus:outline-none focus:border-indigo-500 transition">
+            </div>
+        </section>
+
+        <section id="sectionAtivos" class="space-y-4">
+            <div class="bg-slate-800/50 border border-slate-700/60 rounded-2xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-800/80 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-700">
+                                <th class="py-4 px-6 font-semibold">Veículo</th>
+                                <th class="py-4 px-6 font-semibold">Placa</th>
+                                <th class="py-4 px-6 font-semibold">Tipo</th>
+                                <th class="py-4 px-6 font-semibold">Vaga</th>
+                                <th class="py-4 px-6 font-semibold">Entrada</th>
+                                <th class="py-4 px-6 font-semibold">Tempo Corrido</th>
+                                <th class="py-4 px-6 font-semibold text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableAtivosBody" class="divide-y divide-slate-700/50 text-sm text-slate-300">
+                            <!-- Injetado via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="emptyAtivos" class="hidden py-16 text-center">
+                    <i class="fa-solid fa-car text-4xl text-slate-600 mb-3"></i>
+                    <p class="text-slate-400 text-sm">Nenhum veículo estacionado no momento.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="sectionHistorico" class="space-y-4 hidden">
+            <div class="bg-slate-800/50 border border-slate-700/60 rounded-2xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-800/80 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-700">
+                                <th class="py-4 px-6 font-semibold">Veículo / Placa</th>
+                                <th class="py-4 px-6 font-semibold">Tipo</th>
+                                <th class="py-4 px-6 font-semibold">Vaga</th>
+                                <th class="py-4 px-6 font-semibold">Entrada</th>
+                                <th class="py-4 px-6 font-semibold">Saída</th>
+                                <th class="py-4 px-6 font-semibold">Permanência</th>
+                                <th class="py-4 px-6 font-semibold text-right">Valor Pago</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableHistoricoBody" class="divide-y divide-slate-700/50 text-sm text-slate-300">
+                            <!-- Injetado via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="emptyHistorico" class="hidden py-16 text-center">
+                    <i class="fa-solid fa-clock-rotate-left text-4xl text-slate-600 mb-3"></i>
+                    <p class="text-slate-400 text-sm">Nenhum registro no histórico.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="entryModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-700 bg-slate-800/50">
+                <h3 class="font-bold text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-square-plus text-indigo-400"></i> Registrar Entrada de Veículo
+                </h3>
+                <button onclick="closeEntryModal()" class="text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form id="entryForm" onsubmit="handleEntrySubmit(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Placa do Veículo</label>
+                    <input type="text" id="placaInput" required placeholder="Ex: ABC-1234" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 uppercase tracking-widest font-mono text-sm focus:outline-none focus:border-indigo-500 transition">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Modelo / Marca</label>
+                        <input type="text" id="modeloInput" required placeholder="Ex: Honda Civic" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Cor</label>
+                        <input type="text" id="corInput" required placeholder="Ex: Prata" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 transition">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Tipo de Veículo</label>
+                        <select id="tipoInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 transition">
+                            <option value="Carro">Carro</option>
+                            <option value="Moto">Moto</option>
+                            <option value="Caminhonete">Caminhonete / SUV</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Vaga Designada</label>
+                        <select id="vagaInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 transition">
+                            <!-- Injetado dinamicamente -->
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Horário de Entrada</label>
+                    <input type="datetime-local" id="horaEntradaInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 transition">
+                </div>
+                <div class="pt-4 flex items-center justify-end space-x-3">
+                    <button type="button" onclick="closeEntryModal()" class="px-4 py-2 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-700/50 text-sm transition">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm shadow-lg shadow-indigo-600/20 transition">Confirmar Entrada</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="receiptModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div class="bg-indigo-600 px-6 py-5 text-center text-white relative">
+                <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-2 text-xl">
+                    <i class="fa-solid fa-receipt"></i>
+                </div>
+                <h3 class="font-bold text-lg">Recibo de Saída</h3>
+                <p class="text-xs text-indigo-200">ParkMaster Pro System</p>
+                <button onclick="closeReceiptModal()" class="absolute top-4 right-4 text-white/80 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4 text-sm">
+                <div class="space-y-2 border-b border-slate-700 pb-4">
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Veículo:</span>
+                        <span id="recModelo" class="font-medium text-slate-100">Civic Prata</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Placa:</span>
+                        <span id="recPlaca" class="font-mono font-bold text-indigo-400">ABC-1234</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Vaga:</span>
+                        <span id="recVaga" class="font-medium text-slate-100">V01</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Entrada:</span>
+                        <span id="recEntrada" class="text-slate-300">10/10/2026 08:00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Saída:</span>
+                        <span id="recSaida" class="text-slate-300">10/10/2026 10:30</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Permanência:</span>
+                        <span id="recTempo" class="font-medium text-slate-100">2h 30m</span>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between pt-2">
+                    <span class="text-base font-semibold text-slate-300">Total a Pagar:</span>
+                    <span id="recValor" class="text-2xl font-bold text-emerald-400">R$ 20,00</span>
+                </div>
+                <button onclick="closeReceiptModal()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl font-medium transition shadow-lg shadow-indigo-600/20 mt-2">
+                    Imprimir / Fechar Recibo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="configModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-700 bg-slate-800/50">
+                <h3 class="font-bold text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-indigo-400"></i> Configurações do Estacionamento
+                </h3>
+                <button onclick="closeConfigModal()" class="text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form id="configForm" onsubmit="handleConfigSubmit(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Capacidade Total de Vagas</label>
+                    <input type="number" id="totalVagasConfig" min="1" max="500" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 transition">
+                </div>
+                <div class="border-t border-slate-700 pt-4">
+                    <h4 class="text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-3">Tabela de Preços por Hora (R$)</h4>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Carro</label>
+                            <input type="number" step="0.50" min="0" id="precoCarro" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Moto</label>
+                            <input type="number" step="0.50" min="0" id="precoMoto" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Caminhonete</label>
+                            <input type="number" step="0.50" min="0" id="precoCaminhonete" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 transition">
+                        </div>
+                    </div>
+                </div>
+                <div class="pt-4 flex items-center justify-end space-x-3">
+                    <button type="button" onclick="closeConfigModal()" class="px-4 py-2 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-700/50 text-sm transition">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm shadow-lg shadow-indigo-600/20 transition">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Estado Global da Aplicação
+        let state = {
+            config: {
+                totalVagas: 50,
+                precos: {
+                    Carro: 10.00,
+                    Moto: 6.00,
+                    Caminhonete: 15.00
+                }
+            },
+            ativos: [],
+            historico: []
+        };
+
+        // Carregar do localStorage ao iniciar
+        function loadStorage() {
+            const savedState = localStorage.getItem('parkmaster_state');
+            if (savedState) {
+                try {
+                    state = JSON.parse(savedState);
+                } catch (e) {
+                    console.error('Erro ao ler localStorage', e);
+                }
+            }
+        }
+
+        // Salvar no localStorage
+        function saveStorage() {
+            localStorage.setItem('parkmaster_state', JSON.stringify(state));
+        }
+
+        // Inicialização na carga da janela
+        window.onload = function() {
+            loadStorage();
+            updateDashboard();
+            renderAtivos();
+            renderHistorico();
+            
+            // Atualizar tempos a cada minuto
+            setInterval(() => {
+                if (state.ativos.length > 0) {
+                    renderAtivos();
+                }
+            }, 60000);
+        };
+
+        // Alternar abas
+        function switchTab(tab) {
+            const btnAtivos = document.getElementById('btnTabAtivos');
+            const btnHistorico = document.getElementById('btnTabHistorico');
+            const secAtivos = document.getElementById('sectionAtivos');
+            const secHistorico = document.getElementById('sectionHistorico');
+
+            if (tab === 'ativos') {
+                btnAtivos.className = "px-4 py-2 rounded-lg text-sm font-medium transition bg-indigo-600 text-white shadow";
+                btnHistorico.className = "px-4 py-2 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white";
+                secAtivos.classList.remove('hidden');
+                secHistorico.classList.add('hidden');
+            } else {
+                btnHistorico.className = "px-4 py-2 rounded-lg text-sm font-medium transition bg-indigo-600 text-white shadow";
+                btnAtivos.className = "px-4 py-2 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white";
+                secHistorico.classList.remove('hidden');
+                secAtivos.classList.add('hidden');
+            }
+        }
+
+        // Atualizar estatísticas do dashboard
+        function updateDashboard() {
+            const total = state.config.totalVagas;
+            const ocupadas = state.ativos.length;
+            const livres = Math.max(0, total - ocupadas);
+            
+            // Faturamento total somando histórico e ativos já pagos (se houver)
+            const faturamento = state.historico.reduce((acc, item) => acc + (parseFloat(item.valorPago) || 0), 0);
+
+            document.getElementById('statTotalVagas').innerText = total;
+            document.getElementById('statOcupadas').innerText = ocupadas;
+            document.getElementById('statLivres').innerText = livres;
+            document.getElementById('statFaturamento').innerText = `R$ ${faturamento.toFixed(2).replace('.', ',')}`;
+
+            document.getElementById('countAtivos').innerText = ocupadas;
+            document.getElementById('countHistorico').innerText = state.historico.length;
+        }
+
+        // Popular select de vagas livres
+        function populateVagasSelect() {
+            const select = document.getElementById('vagaInput');
+            select.innerHTML = '';
+
+            const vagasOcupadasSet = new Set(state.ativos.map(v => v.vaga));
+            let vagasLivresList = [];
+
+            for (let i = 1; i <= state.config.totalVagas; i++) {
+                const vagaCod = `V${i < 10 ? '0' + i : i}`;
+                if (!vagasOcupadasSet.has(vagaCod)) {
+                    vagasLivresList.push(vagaCod);
+                }
+            }
+
+            if (vagasLivresList.length === 0) {
+                const opt = document.createElement('option');
+                opt.text = 'Sem vagas disponíveis!';
+                select.appendChild(opt);
+                select.disabled = true;
+                return;
+            }
+
+            select.disabled = false;
+            vagasLivresList.forEach(vaga => {
+                const opt = document.createElement('option');
+                opt.value = vaga;
+                opt.text = `Vaga ${vaga}`;
+                select.appendChild(opt);
+            });
+        }
+
+        // Abrir e fechar Modal de Entrada
+        function openEntryModal() {
+            populateVagasSelect();
+            // Definir data/hora atual no input datetime-local
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('horaEntradaInput').value = now.toISOString().slice(0, 16);
+            document.getElementById('entryForm').reset();
+            // Restaurar a data atual após resetar
+            document.getElementById('horaEntradaInput').value = now.toISOString().slice(0, 16);
+            document.getElementById('entryModal').classList.remove('hidden');
+        }
+
+        function closeEntryModal() {
+            document.getElementById('entryModal').classList.add('hidden');
+        }
+
+        // Submeter entrada de veículo
+        function handleEntrySubmit(e) {
+            e.preventDefault();
+            const placa = document.getElementById('placaInput').value.trim().toUpperCase();
+            const modelo = document.getElementById('modeloInput').value.trim();
+            const cor = document.getElementById('corInput').value.trim();
+            const tipo = document.getElementById('tipoInput').value;
+            const vaga = document.getElementById('vagaInput').value;
+            const horaEntrada = document.getElementById('horaEntradaInput').value;
+
+            if (!vaga || vaga.includes('Sem vagas')) {
+                alert('Não há vagas disponíveis!');
+                return;
+            }
+
+            // Verificar se placa já está estacionada
+            if (state.ativos.some(v => v.placa === placa)) {
+                alert(`O veículo com a placa ${placa} já se encontra estacionado!`);
+                return;
+            }
+
+            const novoVeiculo = {
+                id: Date.now().toString(),
+                placa,
+                modelo,
+                cor,
+                tipo,
+                vaga,
+                horaEntrada: new Date(horaEntrada).getTime()
+            };
+
+            state.ativos.push(novoVeiculo);
+            saveStorage();
+            updateDashboard();
+            renderAtivos();
+            closeEntryModal();
+        }
+
+        // Calcular tempo decorrido e valor estimado
+        function calcularTempoEValor(horaEntradaMs, tipoVeiculo) {
+            const agora = Date.now();
+            const diffMs = Math.max(0, agora - horaEntradaMs);
+            const diffHorasDecimal = diffMs / (1000 * 60 * 60);
+
+            const horas = Math.floor(diffMs / (1000 * 60 * 60));
+            const minutos = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+            const precoHora = state.config.precos[tipoVeiculo] || 10.00;
+            // Cobrança mínima de 1 hora ou fração proporcional
+            const horasCobranca = Math.max(1, Math.ceil(diffHorasDecimal));
+            const valorTotal = horasCobranca * precoHora;
+
+            return {
+                tempoStr: `${horas}h ${minutos}m`,
+                valorTotal: valorTotal
+            };
+        }
+
+        // Renderizar veículos ativos
+        function renderAtivos(filtro = '') {
+            const tbody = document.getElementById('tableAtivosBody');
+            const emptyDiv = document.getElementById('emptyAtivos');
+            tbody.innerHTML = '';
+
+            const termo = filtro.toLowerCase();
+            const filtrados = state.ativos.filter(v => 
+                v.placa.toLowerCase().includes(termo) || v.modelo.toLowerCase().includes(termo)
+            );
+
+            if (filtrados.length === 0) {
+                emptyDiv.classList.remove('hidden');
+                return;
+            }
+            emptyDiv.classList.add('hidden');
+
+            filtrados.forEach(v => {
+                const calc = calcularTempoEValor(v.horaEntrada, v.tipo);
+                
+                let iconTipo = 'fa-car';
+                if (v.tipo === 'Moto') iconTipo = 'fa-motorcycle';
+                if (v.tipo === 'Caminhonete') iconTipo = 'fa-truck-pickup';
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-800/40 transition";
+                tr.innerHTML = `
+                    <td class="py-4 px-6">
+                        <div class="font-medium text-slate-100">${v.modelo}</div>
+                        <div class="text-xs text-slate-400">Cor: ${v.cor}</div>
+                    </td>
+                    <td class="py-4 px-6">
+                        <span class="bg-indigo-500/10 text-indigo-400 font-mono font-bold px-2.5 py-1 rounded-lg border border-indigo-500/20">${v.placa}</span>
+                    </td>
+                    <td class="py-4 px-6 flex items-center gap-2 pt-5">
+                        <i class="fa-solid ${iconTipo} text-slate-400"></i> ${v.tipo}
+                    </td>
+                    <td class="py-4 px-6">
+                        <span class="bg-slate-700 text-slate-200 px-2.5 py-1 rounded-lg font-semibold text-xs">${v.vaga}</span>
+                    </td>
+                    <td class="py-4 px-6 text-slate-300 text-xs">
+                        ${new Date(v.horaEntrada).toLocaleString('pt-BR')}
+                    </td>
+                    <td class="py-4 px-6 font-medium text-amber-400">
+                        ${calc.tempoStr} <span class="text-xs text-slate-400 block font-normal">Est. R$ ${calc.valorTotal.toFixed(2).replace('.', ',')}</span>
+                    </td>
+                    <td class="py-4 px-6 text-right">
+                        <button onclick="realizarSaida('${v.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-1.5 rounded-xl text-xs font-medium transition shadow-sm inline-flex items-center gap-1.5">
+                            <i class="fa-solid fa-right-from-bracket"></i> Registrar Saída
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Filtrar veículos ativos via busca
+        function filterVehicles() {
+            const query = document.getElementById('searchInput').value;
+            renderAtivos(query);
+        }
+
+        // Realizar saída de veículo
+        function realizarSaida(id) {
+            const index = state.ativos.findIndex(v => v.id === id);
+            if (index === -1) return;
+
+            const veiculo = state.ativos[index];
+            const horaSaidaMs = Date.now();
+            const calc = calcularTempoEValor(veiculo.horaEntrada, veiculo.tipo);
+
+            const registroHistorico = {
+                ...veiculo,
+                horaSaida: horaSaidaMs,
+                tempoPermanencia: calc.tempoStr,
+                valorPago: calc.valorTotal
+            };
+
+            // Remover dos ativos e adicionar ao histórico
+            state.ativos.splice(index, 1);
+            state.historico.unshift(registroHistorico);
+
+            saveStorage();
+            updateDashboard();
+            renderAtivos();
+            renderHistorico();
+
+            // Exibir modal de recibo
+            showReceipt(registroHistorico);
+        }
+
+        // Mostrar recibo
+        function showReceipt(item) {
+            document.getElementById('recModelo').innerText = `${item.modelo} (${item.cor})`;
+            document.getElementById('recPlaca').innerText = item.placa;
+            document.getElementById('recVaga').innerText = item.vaga;
+            document.getElementById('recEntrada').innerText = new Date(item.horaEntrada).toLocaleString('pt-BR');
+            document.getElementById('recSaida').innerText = new Date(item.horaSaida).toLocaleString('pt-BR');
+            document.getElementById('recTempo').innerText = item.tempoPermanencia;
+            document.getElementById('recValor').innerText = `R$ ${item.valorPago.toFixed(2).replace('.', ',')}`;
+
+            document.getElementById('receiptModal').classList.remove('hidden');
+        }
+
+        function closeReceiptModal() {
+            document.getElementById('receiptModal').classList.add('hidden');
+        }
+
+        // Renderizar histórico
+        function renderHistorico() {
+            const tbody = document.getElementById('tableHistoricoBody');
+            const emptyDiv = document.getElementById('emptyHistorico');
+            tbody.innerHTML = '';
+
+            if (state.historico.length === 0) {
+                emptyDiv.classList.remove('hidden');
+                return;
+            }
+            emptyDiv.classList.add('hidden');
+
+            state.historico.forEach(item => {
+                let iconTipo = 'fa-car';
+                if (item.tipo === 'Moto') iconTipo = 'fa-motorcycle';
+                if (item.tipo === 'Caminhonete') iconTipo = 'fa-truck-pickup';
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-800/40 transition";
+                tr.innerHTML = `
+                    <td class="py-4 px-6">
+                        <div class="font-medium text-slate-100">${item.modelo}</div>
+                        <div class="font-mono font-bold text-indigo-400 text-xs">${item.placa}</div>
+                    </td>
+                    <td class="py-4 px-6 flex items-center gap-2 pt-5">
+                        <i class="fa-solid ${iconTipo} text-slate-400"></i> ${item.tipo}
+                    </td>
+                    <td class="py-4 px-6">
+                        <span class="bg-slate-700 text-slate-200 px-2.5 py-1 rounded-lg font-semibold text-xs">${item.vaga}</span>
+                    </td>
+                    <td class="py-4 px-6 text-slate-300 text-xs">
+                        ${new Date(item.horaEntrada).toLocaleString('pt-BR')}
+                    </td>
+                    <td class="py-4 px-6 text-slate-300 text-xs">
+                        ${new Date(item.horaSaida).toLocaleString('pt-BR')}
+                    </td>
+                    <td class="py-4 px-6 text-slate-300">
+                        ${item.tempoPermanencia}
+                    </td>
+                    <td class="py-4 px-6 text-right font-bold text-emerald-400">
+                        R$ ${(item.valorPago || 0).toFixed(2).replace('.', ',')}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Modal de Configurações
+        function openConfigModal() {
+            document.getElementById('totalVagasConfig').value = state.config.totalVagas;
+            document.getElementById('precoCarro').value = state.config.precos.Carro;
+            document.getElementById('precoMoto').value = state.config.precos.Moto;
+            document.getElementById('precoCaminhonete').value = state.config.precos.Caminhonete;
+
+            document.getElementById('configModal').classList.remove('hidden');
+        }
+
+        function closeConfigModal() {
+            document.getElementById('configModal').classList.add('hidden');
+        }
+
+        function handleConfigSubmit(e) {
+            e.preventDefault();
+            const novaCapacidade = parseInt(document.getElementById('totalVagasConfig').value);
+            const precoCarro = parseFloat(document.getElementById('precoCarro').value);
+            const precoMoto = parseFloat(document.getElementById('precoMoto').value);
+            const precoCaminhonete = parseFloat(document.getElementById('precoCaminhonete').value);
+
+            if (novaCapacidade < state.ativos.length) {
+                alert(`Erro: A nova capacidade (${novaCapacidade}) é menor que a quantidade de veículos atualmente estacionados (${state.ativos.length}).`);
+                return;
+            }
+
+            state.config.totalVagas = novaCapacidade;
+            state.config.precos.Carro = precoCarro;
+            state.config.precos.Moto = precoMoto;
+            state.config.precos.Caminhonete = precoCaminhonete;
+
+            saveStorage();
+            updateDashboard();
+            closeConfigModal();
+        }
+    </script>
+</body>
+</html>
